@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 // import Page from "./components/Page";
 import "./App.css";
 
@@ -8,7 +8,9 @@ function App() {
   return (
     <div>
       {/* <Page /> */}
-      <HeaderTab />
+      <div className='max-w'>
+        <p className='font-bold text-center text-lg'>TypeScript List</p>
+      </div>
       <PageTable />
     </div>
   );

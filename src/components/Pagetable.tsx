@@ -2,82 +2,104 @@ import React, { useState, useEffect } from "react";
 import Mock from "./Mockapi";
 import Pages from "./Page";
 import Search from "./Search";
-const PageTable: React.FC = () => {
-  interface Submission {
-    answerText: string;
-    questionEmbedId: string;
-    user: {
-      email: string;
-    };
-    created: string;
-  }
+import { header } from "./Mockapi";
+import Drop from "./Droupdown";
+//settign the interface
+interface Submission {
+  answerText: string;
+  questionEmbedId: string;
+  user: {
+    email: string;
+  };
+  created: string;
+}
 
+interface IProps {
+  name: string;
+  fields: string;
+}
+
+const PageTable: React.FC = () => {
+  const [headervalues] = useState<IProps[]>(header);
   const [users, setUser] = useState<Submission[]>([]);
   const [search, setSearch] = useState("");
-  // const [use, setUse] = useState<Submission[]>([]);
-  // console.log(setUse);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [postperpage, setPostPerPage] = useState<number>(12);
+  const [drop, setDrop] = useState<any>("Sort By Name(ASC)");
   console.log(search);
   console.log(users);
-  // const dis = () => {
-  //   users.map((user) => {
-  //     console.log(user.user.email);
-  //   });
-  // };
-  // dis();
-  // const useremail = "person2@gmail.com";
-  // const display = users.filter((obj) => {
-  //   return obj["user"]["email"] === useremail;
-  // });
-
-  // console.log(display);
-
-  //Filter
-  const onSearch = (value: any) => {
-    setSearch(value);
-    setCurrentPage(1);
-  };
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [postperpage, setPostPerPage] = useState<number>(8);
+  console.log(drop);
   useEffect(() => {
     setUser(Mock);
   }, []);
 
-  useEffect(() => {
-    if (search) {
-      const display = users.filter((obj) => {
-        return obj["user"]["email"].includes(search);
-      });
-      // const display = users.filter((job) =>
-      //   Object.values(job).some((value) => value.includes(search))
-      // );
-      console.log(display);
-    } else {
-      setUser(Mock);
+  //Sorting the value
+  const sorted = users.sort((a, b): any => {
+    if (drop) {
+      const isReversed = drop === "Sort By Name(ASC)" ? 1 : -1;
+      return isReversed * a.user.email.localeCompare(b.user.email);
     }
-  }, [search]);
-  // const search = (userval) =>{
-  //   return userval === users.user.email
-  // }
+  });
+
+  //setting search Filter
+  const onSearch = (value: any) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+  const allpages = sorted.filter((user) => {
+    return user.user.email.indexOf(search) !== -1;
+  });
+
   //Setting the pagination
+
   const indexOfLastPage = currentPage * postperpage;
   const indexOfFirstPage = indexOfLastPage - postperpage;
-  const pages = users.slice(indexOfFirstPage, indexOfLastPage);
+  const pages = allpages.slice(indexOfFirstPage, indexOfLastPage);
   const paginate = (value: number): void => {
     setCurrentPage(value);
   };
+
   return (
-    <div>
-      <Search onSearch={onSearch} />
-      {pages.map((user) => (
-        <ul
-          className='flex flex-row border list-none rounded-lg mx-4 p-4'
-          key={user.answerText}>
-          <li className=' px-4'>{user.answerText}</li>
-          <li className=' px-4'>{user.questionEmbedId}</li>
-          <li className=' px-4'>{user.user.email}</li>
-          <li className=' px-4'>{user.created}</li>
-        </ul>
-      ))}
+    <div className='max-w'>
+      <div className='container'>
+        <div className='max-w flex-column justify-end sm:flex md:flex lg:flex'>
+          <Search onSearch={onSearch} />
+          <Drop onDrop={setDrop} />
+        </div>
+        <div className='overflow-x-auto bg-white rounded-lg shadow overflow-y-auto relative'>
+          <table className='border-collapse table-auto w-full whitespace-no-wrap bg-white table-striped relative'>
+            <thead className='text-white'>
+              <tr className='text-left'>
+                {header.map((head) => (
+                  <th
+                    key={head.fields}
+                    className='py-2 px-3 sticky top-0 border-b border-gray-200 bg-gray-500'>
+                    {head.name}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className='flex-1 sm:flex-none'>
+              {pages.map((page) => (
+                <tr>
+                  <td className='border-dashed border-t border-gray-200 px-3'>
+                    {page.answerText}
+                  </td>
+                  <td className='border-dashed border-t border-gray-200 px-3'>
+                    {page.questionEmbedId}
+                  </td>
+                  <td className='border-dashed border-t border-gray-200 px-3'>
+                    {page.user.email}
+                  </td>
+                  <td className='border-dashed border-t border-gray-200 px-3'>
+                    {page.created}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
       <Pages allpages={postperpage} total={users.length} paginate={paginate} />
     </div>
   );
