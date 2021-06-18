@@ -4,6 +4,7 @@ import Pages from "./Page";
 import Search from "./Search";
 import { header } from "./Mockapi";
 import Drop from "./Droupdown";
+import axios from "axios";
 //settign the interface
 interface Submission {
   answerText: string;
@@ -30,7 +31,9 @@ const PageTable: React.FC = () => {
   console.log(users);
   console.log(drop);
   useEffect(() => {
-    setUser(Mock);
+    axios.get(`${process.env.REACT_APP_API}`).then((response) => {
+      setUser(response.data);
+    });
   }, []);
 
   //Sorting the value
